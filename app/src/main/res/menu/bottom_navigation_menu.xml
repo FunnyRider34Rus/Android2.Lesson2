@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/inrussia_weather_navigation"
+        android:title="@string/weather_russia"
+        android:icon="@drawable/ic_baseline_flag_24"/>
+
+    <item
+        android:id="@+id/inworld_weather_navigation"
+        android:title="@string/weather_world"
+        android:icon="@drawable/ic_baseline_world_24"/>
+
+    <item
+        android:id="@+id/settings_navigation"
+        android:title="@string/setting_menu"
+        android:icon="@drawable/ic_baseline_settings_24"/>
+</menu>
