@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.MainActivityBinding
+import com.example.weatherapp.view.DetailsFragment.Companion.bundle
 
 class MainActivity : AppCompatActivity() {
 
@@ -13,10 +14,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = MainActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        /*if (savedInstanceState == null) {
+        if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.container, MainFragment.newInstance())
+                .replace(R.id.container, ListFragment.newInstance(bundle))
                 .commitNow()
-        }*/
+        }
     }
 }

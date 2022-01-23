@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/search_navigation"
-        android:title="@string/search_city"
-        android:icon="@drawable/ic_baseline_search_24"/>
+        android:id="@+id/inrussia_weather_navigation"
+        android:title="@string/weather_russia"
+        android:icon="@drawable/ic_baseline_flag_24"/>
 
     <item
-        android:id="@+id/city_weather_navigation"
-        android:title="@string/weather_city"
-        android:icon="@drawable/ic_baseline_cloud_24"/>
+        android:id="@+id/inworld_weather_navigation"
+        android:title="@string/weather_world"
+        android:icon="@drawable/ic_baseline_world_24"/>
 
     <item
         android:id="@+id/settings_navigation"
