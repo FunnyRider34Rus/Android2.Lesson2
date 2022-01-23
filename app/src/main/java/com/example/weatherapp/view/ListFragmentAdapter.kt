@@ -40,7 +40,7 @@ class ListFragmentAdapter(private var onItemViewClickListener: OnItemViewClickLi
     inner class MainViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
         fun bind(weather: Weather) {
-            itemView.findViewById<TextView>(R.id.mainFragmentRecyclerItemTextView).text =
+            itemView.findViewById<TextView>(R.id.RecyclerItemView).text =
                 weather.city.city
             itemView.setOnClickListener {
                 Toast.makeText(

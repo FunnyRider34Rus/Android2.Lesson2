@@ -60,48 +60,55 @@ class ListFragment : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        viewModel.getLiveData().observe(viewLifecycleOwner, { renderData(it) })
+        viewModel.getWeatherFromLocalSourceRus()
+
         val menu_button = arguments?.getString(BUNDLE_EXTRA_MENU)
-        isDataSetRus = when (menu_button) {
-            "isRussian" -> true
-            "isWorld" -> false
-            else -> true
+        when (menu_button) {
+            "isRussian" -> {
+                viewModel.getWeatherFromLocalSourceRus()
+                isDataSetRus = true
+            }
+            "isWorld" -> {
+                viewModel.getWeatherFromLocalSourceWorld()
+                isDataSetRus = false
+            }
+            else -> {
+                viewModel.getWeatherFromLocalSourceRus()
+                isDataSetRus = true
+            }
         }
 
         binding.recyclerView.adapter = adapter
         binding.bottomNavigationMenu.setOnItemSelectedListener { menu ->
             when (menu.itemId) {
                 R.id.inrussia_weather_navigation -> {
-                    changeWeatherDataSet()
+                    viewModel.getWeatherFromLocalSourceRus()
                     true
                 }
 
                 R.id.inworld_weather_navigation -> {
-                    changeWeatherDataSet()
+                    viewModel.getWeatherFromLocalSourceWorld()
                     true
                 }
 
                 R.id.settings_navigation -> {
                     true
                 }
-
-                else -> false
+                else -> { true }
             }
         }
-
-        //binding.mainFragmentFAB.setOnClickListener { changeWeatherDataSet() }
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        viewModel.getLiveData().observe(viewLifecycleOwner, Observer { renderData(it) })
-        viewModel.getWeatherFromLocalSourceRus()
     }
 
-    private fun changeWeatherDataSet() {
+    /*private fun changeWeatherDataSet() {
         if (isDataSetRus) {
             viewModel.getWeatherFromLocalSourceWorld()
         } else {
             viewModel.getWeatherFromLocalSourceRus()
-        }
-        isDataSetRus = !isDataSetRus
-    }
+        }.also { isDataSetRus = !isDataSetRus }
+    }*/
 
     private fun renderData(appState: AppState) {
         when (appState) {
@@ -116,16 +123,26 @@ class ListFragment : BottomSheetDialogFragment() {
             }
             is AppState.Error -> {
                 binding.progressBar.visibility = View.GONE
-                Snackbar
-                    .make(
-                        binding.bottomNavigationMenu,
-                        getString(R.string.error),
-                        Snackbar.LENGTH_INDEFINITE
-                    )
-                    .setAction(getString(R.string.reload)) { viewModel.getWeatherFromLocalSourceRus() }
-                    .show()
+                binding.listFragmentRootView.showSnackBarWithAction(
+                    getString(R.string.error),
+                    getString(R.string.reload),
+                    { viewModel.getWeatherFromLocalSourceRus() }
+                )
             }
         }
+    }
+
+    private fun View.showSnackBarWithAction(
+        text: String,
+        actionText: String,
+        action: (View) -> Unit,
+        length: Int = Snackbar.LENGTH_INDEFINITE
+    ){
+        Snackbar.make(this, text, length).setAction(actionText, action).show()
+    }
+
+    private fun View.showSnackBarWithoutAction( text: String, length: Int = Snackbar.LENGTH_LONG) {
+        Snackbar.make(this, text, length).show()
     }
 
     override fun onDestroy() {
