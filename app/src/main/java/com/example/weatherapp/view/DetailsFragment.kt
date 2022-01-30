@@ -2,22 +2,20 @@ package com.example.weatherapp.view
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentManager
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.DetailsFragmentBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.example.weatherapp.model.Weather
-import com.example.weatherapp.viewmodel.MainViewModel
+
+private const val YOUR_API_KEY = "f140efeb-3d4c-4af4-98c9-66c3af7f143b"
 
 class DetailsFragment : BottomSheetDialogFragment() {
 
     companion object {
 
         const val BUNDLE_EXTRA = "weather"
-        const val BUNDLE_EXTRA_MENU = "menu"
 
         val bundle = Bundle()
 
@@ -30,6 +28,7 @@ class DetailsFragment : BottomSheetDialogFragment() {
 
     private var _binding: DetailsFragmentBinding? = null
     private val binding get() = _binding!!
+    private lateinit var weatherBundle: Weather
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,9 +44,7 @@ class DetailsFragment : BottomSheetDialogFragment() {
         if (weather != null) {
             val city = weather.city
             binding.itemViewCityName.text = city.city
-            //binding.cityCoordinates.text = "${getString(R.string.city_coordinates)} ${city.lat} ${city.lon}"
             binding.itemViewCityTemp.text = weather.temperature.toString()
-            //binding.feelsLikeValue.text = weather.feelsLike.toString()
         }
 
         binding.bottomNavigationMenu.setOnItemSelectedListener { menu ->

@@ -1,12 +1,9 @@
 package com.example.weatherapp.view
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.ListFragmentBinding
@@ -14,7 +11,6 @@ import com.example.weatherapp.model.Weather
 import com.example.weatherapp.viewmodel.AppState
 import com.example.weatherapp.viewmodel.MainViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.snackbar.Snackbar
 
 class ListFragment : BottomSheetDialogFragment() {
@@ -62,22 +58,21 @@ class ListFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        viewModel.getLiveData().observe(viewLifecycleOwner, { renderData(it) })
+        viewModel.getLiveData().observe(viewLifecycleOwner) { renderData(it) }
         viewModel.getWeatherFromLocalSourceRus()
 
-        val menu_button = arguments?.getString(BUNDLE_EXTRA_MENU)
-        when (menu_button) {
+        isDataSetRus = when (arguments?.getString(BUNDLE_EXTRA_MENU)) {
             "isRussian" -> {
                 viewModel.getWeatherFromLocalSourceRus()
-                isDataSetRus = true
+                true
             }
             "isWorld" -> {
                 viewModel.getWeatherFromLocalSourceWorld()
-                isDataSetRus = false
+                false
             }
             else -> {
                 viewModel.getWeatherFromLocalSourceRus()
-                isDataSetRus = true
+                true
             }
         }
 
@@ -101,14 +96,6 @@ class ListFragment : BottomSheetDialogFragment() {
             }
         }
     }
-
-    /*private fun changeWeatherDataSet() {
-        if (isDataSetRus) {
-            viewModel.getWeatherFromLocalSourceWorld()
-        } else {
-            viewModel.getWeatherFromLocalSourceRus()
-        }.also { isDataSetRus = !isDataSetRus }
-    }*/
 
     private fun renderData(appState: AppState) {
         when (appState) {
@@ -139,10 +126,6 @@ class ListFragment : BottomSheetDialogFragment() {
         length: Int = Snackbar.LENGTH_INDEFINITE
     ){
         Snackbar.make(this, text, length).setAction(actionText, action).show()
-    }
-
-    private fun View.showSnackBarWithoutAction( text: String, length: Int = Snackbar.LENGTH_LONG) {
-        Snackbar.make(this, text, length).show()
     }
 
     override fun onDestroy() {
