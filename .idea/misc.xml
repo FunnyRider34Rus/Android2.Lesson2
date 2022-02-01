@@ -4,7 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.21458333333333332" />
-        <entry key="app/src/main/res/layout/details_fragment.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/details_fragment.xml" value="0.1" />
         <entry key="app/src/main/res/layout/item_city_card.xml" value="0.1" />
         <entry key="app/src/main/res/layout/item_recycler_citites.xml" value="0.10326086956521739" />
         <entry key="app/src/main/res/layout/list_fragment.xml" value="0.1" />
