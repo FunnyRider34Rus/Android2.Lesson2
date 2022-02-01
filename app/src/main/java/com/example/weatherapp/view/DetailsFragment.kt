@@ -15,6 +15,7 @@ import com.example.weatherapp.databinding.DetailsFragmentBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.example.weatherapp.model.Weather
 import com.example.weatherapp.model.WeatherDTO
+import com.example.weatherapp.model.WeatherLoader
 import com.google.gson.Gson
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -38,6 +39,12 @@ class DetailsFragment : BottomSheetDialogFragment() {
     private var _binding: DetailsFragmentBinding? = null
     private val binding get() = _binding!!
     private lateinit var weatherBundle: Weather
+    private val onLoadListener: WeatherLoader.WeatherLoaderListener =
+        object : WeatherLoader.WeatherLoaderListener {
+            override fun onLoaded(weatherDTO: WeatherDTO) { displayWeather(weatherDTO) }
+            override fun onFailed(throwable: Throwable) { //Обратока ошибки
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,53 +55,11 @@ class DetailsFragment : BottomSheetDialogFragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun loadWeather() {
-        try {
-            val uri =
-                URL("https://api.weather.yandex.ru/v2/forecast?lat=${weatherBundle.city.lat}&lon=${weatherBundle.city.lon}")
-            val handler = Handler()
-            Thread(Runnable {
-                lateinit var urlConnection: HttpsURLConnection
-                try {
-                    urlConnection = uri.openConnection() as HttpsURLConnection
-                    urlConnection.requestMethod = "GET"
-                    urlConnection.addRequestProperty( "X-Yandex-API-Key", BuildConfig.API_WEATHER_KEY)
-                    urlConnection.readTimeout = 10000
-                    val bufferedReader = BufferedReader(InputStreamReader(urlConnection.inputStream))
-                    val weatherDTO: WeatherDTO = Gson().fromJson(getLines(bufferedReader), WeatherDTO::class.java)
-                    handler.post { displayWeather(weatherDTO) }
-                } catch (e: Exception) {
-                    Log.e("", "Fail connection", e)
-                    e.printStackTrace() //Обработка ошибки
-                } finally {
-                    urlConnection.disconnect()
-                }
-            }).start()
-        } catch (e: MalformedURLException) {
-            Log.e("", "Fail URI", e)
-            e.printStackTrace()
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun getLines(reader: BufferedReader): String {
-        return reader.lines().collect(Collectors.joining("\n"))
-    }
-
-    private fun displayWeather(weatherDTO: WeatherDTO) {
-        with(binding) {
-            val city = weatherBundle.city
-            itemViewCityName.text = city.city
-            itemViewCityCondition.text = weatherDTO.fact?.condition
-            itemViewCityTemp.text = weatherDTO.fact?.temp.toString()
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         weatherBundle = arguments?.getParcelable(BUNDLE_EXTRA) ?: Weather()
-        loadWeather()
+        val loader = WeatherLoader(onLoadListener, weatherBundle.city.lat, weatherBundle.city.lon)
+        loader.loadWeather()
 
         binding.bottomNavigationMenu.setOnItemSelectedListener { menu ->
             when (menu.itemId) {
@@ -116,6 +81,15 @@ class DetailsFragment : BottomSheetDialogFragment() {
 
                 else -> false
             }
+        }
+    }
+
+    private fun displayWeather(weatherDTO: WeatherDTO) {
+        with(binding) {
+            val city = weatherBundle.city
+            itemViewCityName.text = city.city
+            itemViewCityCondition.text = weatherDTO.fact?.condition
+            itemViewCityTemp.text = weatherDTO.fact?.temp.toString()
         }
     }
 }
