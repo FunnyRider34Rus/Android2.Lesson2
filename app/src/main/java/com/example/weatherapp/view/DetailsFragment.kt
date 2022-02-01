@@ -3,11 +3,13 @@ package com.example.weatherapp.view
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
+import com.example.weatherapp.BuildConfig
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.DetailsFragmentBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -21,16 +23,13 @@ import java.net.URL
 import java.util.stream.Collectors
 import javax.net.ssl.HttpsURLConnection
 
-private const val API_WEATHER_KEY = "f140efeb-3d4c-4af4-98c9-66c3af7f143b"
+//private const val API_WEATHER_KEY = "f140efeb-3d4c-4af4-98c9-66c3af7f143b"
 
 class DetailsFragment : BottomSheetDialogFragment() {
 
     companion object {
-
         const val BUNDLE_EXTRA = "weather"
-
         val bundle = Bundle()
-
         fun newInstance(bundle: Bundle): DetailsFragment {
             val fragment = DetailsFragment()
             fragment.arguments = bundle
@@ -61,7 +60,7 @@ class DetailsFragment : BottomSheetDialogFragment() {
                 try {
                     urlConnection = uri.openConnection() as HttpsURLConnection
                     urlConnection.requestMethod = "GET"
-                    urlConnection.addRequestProperty("X-Yandex-API-Key", API_WEATHER_KEY)
+                    urlConnection.addRequestProperty( "X-Yandex-API-Key", BuildConfig.API_WEATHER_KEY)
                     urlConnection.readTimeout = 10000
                     val bufferedReader = BufferedReader(InputStreamReader(urlConnection.inputStream))
                     val weatherDTO: WeatherDTO = Gson().fromJson(getLines(bufferedReader), WeatherDTO::class.java)
