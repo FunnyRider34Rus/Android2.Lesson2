@@ -23,8 +23,6 @@ import java.net.URL
 import java.util.stream.Collectors
 import javax.net.ssl.HttpsURLConnection
 
-//private const val API_WEATHER_KEY = "f140efeb-3d4c-4af4-98c9-66c3af7f143b"
-
 class DetailsFragment : BottomSheetDialogFragment() {
 
     companion object {
