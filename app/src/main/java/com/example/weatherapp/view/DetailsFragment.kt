@@ -2,27 +2,17 @@ package com.example.weatherapp.view
 
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
-import com.example.weatherapp.BuildConfig
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.DetailsFragmentBinding
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.example.weatherapp.model.Weather
 import com.example.weatherapp.model.WeatherDTO
 import com.example.weatherapp.model.WeatherLoader
-import com.google.gson.Gson
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.MalformedURLException
-import java.net.URL
-import java.util.stream.Collectors
-import javax.net.ssl.HttpsURLConnection
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.snackbar.Snackbar
 
 class DetailsFragment : BottomSheetDialogFragment() {
 
@@ -39,12 +29,6 @@ class DetailsFragment : BottomSheetDialogFragment() {
     private var _binding: DetailsFragmentBinding? = null
     private val binding get() = _binding!!
     private lateinit var weatherBundle: Weather
-    private val onLoadListener: WeatherLoader.WeatherLoaderListener =
-        object : WeatherLoader.WeatherLoaderListener {
-            override fun onLoaded(weatherDTO: WeatherDTO) { displayWeather(weatherDTO) }
-            override fun onFailed(throwable: Throwable) { //Обратока ошибки
-            }
-        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,6 +42,23 @@ class DetailsFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         weatherBundle = arguments?.getParcelable(BUNDLE_EXTRA) ?: Weather()
+        var isFirstError = true
+        val onLoadListener: WeatherLoader.WeatherLoaderListener =
+            object : WeatherLoader.WeatherLoaderListener {
+                override fun onLoaded(weatherDTO: WeatherDTO) { displayWeather(weatherDTO) }
+                override fun onFailed(throwable: Throwable, weatherDTO: WeatherDTO) {
+                    if (isFirstError) {
+                        isFirstError = !isFirstError
+                        displayWeather(weatherDTO)
+                    } else {
+                        Snackbar
+                            .make(view, "Не удаётся загрузить данные", Snackbar.LENGTH_LONG)
+                            .setAction("Отменить") { activity?.supportFragmentManager?.popBackStack() }
+                            .show()
+                    }
+                }
+            }
+
         val loader = WeatherLoader(onLoadListener, weatherBundle.city.lat, weatherBundle.city.lon)
         loader.loadWeather()
 

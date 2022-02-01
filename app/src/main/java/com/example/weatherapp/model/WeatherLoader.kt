@@ -52,6 +52,7 @@ class WeatherLoader(private val listener: WeatherLoaderListener, private val lat
     }
 
     interface WeatherLoaderListener {
-        fun onLoaded(weatherDTO: WeatherDTO) fun onFailed(throwable: Throwable)
+        fun onLoaded(weatherDTO: WeatherDTO)
+        fun onFailed(throwable: Throwable, weatherDTO: WeatherDTO)
     }
 }
