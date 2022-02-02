@@ -1,18 +1,42 @@
 package com.example.weatherapp.view
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.DetailsFragmentBinding
+import com.example.weatherapp.model.FactDTO
 import com.example.weatherapp.model.Weather
 import com.example.weatherapp.model.WeatherDTO
 import com.example.weatherapp.model.WeatherLoader
+import com.example.weatherapp.service.DetailsService
+import com.example.weatherapp.service.LATITUDE_EXTRA
+import com.example.weatherapp.service.LONGITUDE_EXTRA
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.snackbar.Snackbar
+
+const val DETAILS_INTENT_FILTER = "DETAILS INTENT FILTER"
+const val DETAILS_LOAD_RESULT_EXTRA = "LOAD RESULT"
+const val DETAILS_INTENT_EMPTY_EXTRA = "INTENT IS EMPTY"
+const val DETAILS_DATA_EMPTY_EXTRA = "DATA IS EMPTY"
+const val DETAILS_RESPONSE_EMPTY_EXTRA = "RESPONSE IS EMPTY"
+const val DETAILS_REQUEST_ERROR_EXTRA = "REQUEST ERROR"
+const val DETAILS_REQUEST_ERROR_MESSAGE_EXTRA = "REQUEST ERROR MESSAGE"
+const val DETAILS_URL_MALFORMED_EXTRA = "URL MALFORMED"
+const val DETAILS_RESPONSE_SUCCESS_EXTRA = "RESPONSE SUCCESS"
+const val DETAILS_TEMP_EXTRA = "TEMPERATURE"
+const val DETAILS_CONDITION_EXTRA = "CONDITION"
+private const val TEMP_INVALID = -100
+private const val FEELS_LIKE_INVALID = -100
+private const val PROCESS_ERROR = "Обработка ошибки"
 
 class DetailsFragment : BottomSheetDialogFragment() {
 
@@ -30,6 +54,40 @@ class DetailsFragment : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
     private lateinit var weatherBundle: Weather
 
+    private val loadResultsReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when (intent.getStringExtra(DETAILS_LOAD_RESULT_EXTRA)) {
+                DETAILS_INTENT_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
+                DETAILS_DATA_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
+                DETAILS_RESPONSE_EMPTY_EXTRA -> TODO(PROCESS_ERROR)
+                DETAILS_REQUEST_ERROR_EXTRA -> TODO(PROCESS_ERROR)
+                DETAILS_REQUEST_ERROR_MESSAGE_EXTRA -> TODO(PROCESS_ERROR)
+                DETAILS_URL_MALFORMED_EXTRA -> TODO(PROCESS_ERROR)
+                DETAILS_RESPONSE_SUCCESS_EXTRA -> renderData(
+                    WeatherDTO(
+                        FactDTO(
+                            intent.getIntExtra(DETAILS_TEMP_EXTRA, TEMP_INVALID),
+                            intent.getStringExtra(DETAILS_CONDITION_EXTRA)
+                        )
+                    )
+                )
+                else -> TODO(PROCESS_ERROR)
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState)
+        context?.let {
+            LocalBroadcastManager.getInstance(it)
+                .registerReceiver(loadResultsReceiver, IntentFilter(DETAILS_INTENT_FILTER))
+        }
+    }
+
+    override fun onDestroy() { context?.let {
+        LocalBroadcastManager.getInstance(it).unregisterReceiver(loadResultsReceiver) }
+        super.onDestroy()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -42,25 +100,7 @@ class DetailsFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         weatherBundle = arguments?.getParcelable(BUNDLE_EXTRA) ?: Weather()
-        var isFirstError = true
-        val onLoadListener: WeatherLoader.WeatherLoaderListener =
-            object : WeatherLoader.WeatherLoaderListener {
-                override fun onLoaded(weatherDTO: WeatherDTO) { displayWeather(weatherDTO) }
-                override fun onFailed(throwable: Throwable, weatherDTO: WeatherDTO) {
-                    if (isFirstError) {
-                        isFirstError = !isFirstError
-                        displayWeather(weatherDTO)
-                    } else {
-                        Snackbar
-                            .make(view, "Не удаётся загрузить данные", Snackbar.LENGTH_LONG)
-                            .setAction("Отменить") { activity?.supportFragmentManager?.popBackStack() }
-                            .show()
-                    }
-                }
-            }
-
-        val loader = WeatherLoader(onLoadListener, weatherBundle.city.lat, weatherBundle.city.lon)
-        loader.loadWeather()
+        getWeather()
 
         binding.bottomNavigationMenu.setOnItemSelectedListener { menu ->
             when (menu.itemId) {
@@ -85,6 +125,34 @@ class DetailsFragment : BottomSheetDialogFragment() {
         }
     }
 
+    private fun getWeather() {
+        context?.let {
+            it.startService(Intent(it, DetailsService::class.java).apply {
+                putExtra(
+                    LATITUDE_EXTRA,
+                    weatherBundle.city.lat
+                )
+                putExtra(
+                    LONGITUDE_EXTRA, weatherBundle.city.lon
+                )
+            })
+        }
+    }
+
+    private fun renderData(weatherDTO: WeatherDTO) {
+        val fact = weatherDTO.fact
+        val temp = fact!!.temp
+        val condition = fact.condition
+        if (temp == TEMP_INVALID || condition
+            == null) {
+            TODO(PROCESS_ERROR) } else {
+            val city = weatherBundle.city
+            binding.itemViewCityName.text = city.city
+            binding.itemViewCityTemp.text = temp.toString()
+            binding.itemViewCityCondition.text = condition
+        }
+    }
+
     private fun displayWeather(weatherDTO: WeatherDTO) {
         with(binding) {
             val city = weatherBundle.city
@@ -92,5 +160,10 @@ class DetailsFragment : BottomSheetDialogFragment() {
             itemViewCityCondition.text = weatherDTO.fact?.condition
             itemViewCityTemp.text = weatherDTO.fact?.temp.toString()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
