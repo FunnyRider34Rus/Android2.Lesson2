@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.ConnectivityManager.CONNECTIVITY_ACTION
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -35,7 +36,6 @@ const val DETAILS_RESPONSE_SUCCESS_EXTRA = "RESPONSE SUCCESS"
 const val DETAILS_TEMP_EXTRA = "TEMPERATURE"
 const val DETAILS_CONDITION_EXTRA = "CONDITION"
 private const val TEMP_INVALID = -100
-private const val FEELS_LIKE_INVALID = -100
 private const val PROCESS_ERROR = "Обработка ошибки"
 
 class DetailsFragment : BottomSheetDialogFragment() {
@@ -53,6 +53,12 @@ class DetailsFragment : BottomSheetDialogFragment() {
     private var _binding: DetailsFragmentBinding? = null
     private val binding get() = _binding!!
     private lateinit var weatherBundle: Weather
+
+    private val networkReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Snackbar.make(view!!, "Изменилось состояние сети", Snackbar.LENGTH_LONG).show()
+        }
+    }
 
     private val loadResultsReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -81,10 +87,12 @@ class DetailsFragment : BottomSheetDialogFragment() {
             LocalBroadcastManager.getInstance(it)
                 .registerReceiver(loadResultsReceiver, IntentFilter(DETAILS_INTENT_FILTER))
         }
+        context?.registerReceiver(networkReceiver, IntentFilter("android.net.ConnectivityManager.CONNECTIVITY_CHANGE"))
     }
 
     override fun onDestroy() { context?.let {
         LocalBroadcastManager.getInstance(it).unregisterReceiver(loadResultsReceiver) }
+        context?.unregisterReceiver(networkReceiver)
         super.onDestroy()
     }
 
