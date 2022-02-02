@@ -132,8 +132,15 @@ class ListFragment : BottomSheetDialogFragment() {
         adapter.removeListener()
         super.onDestroy()
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }
 
 interface OnItemViewClickListener {
     fun onItemViewClick(weather: Weather)
 }
+
+
