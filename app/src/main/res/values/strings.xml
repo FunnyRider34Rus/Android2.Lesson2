@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">Weather App</string>
+    <string name="app_name">Погода</string>
+    <string name="weather_russia">В России</string>
+    <string name="weather_world">В мире</string>
+    <string name="setting_menu">Настройки</string>
+    <string name="error">ошибка</string>
+    <string name="reload">перезагрузить</string>
+    <string name="city_coordinates">Координаты:</string>
 </resources>
